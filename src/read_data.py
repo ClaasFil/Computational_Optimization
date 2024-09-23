@@ -1,31 +1,12 @@
 import os
 import csv
 import argparse
-
-# Define the Courier class
-class Courier:
-    def __init__(self, courier_id, location, capacity):
-        self.courier_id = courier_id
-        self.location = location
-        self.capacity = capacity
-
-    def __repr__(self):
-        return f"Courier(ID={self.courier_id}, Location={self.location}, Capacity={self.capacity})"
+import logging
+from src.delivery import Delivery
+from src.courier import Courier
 
 
-# Define the Delivery class
-class Delivery:
-    def __init__(self, delivery_id, capacity, pickup_loc, time_window_start, pickup_stacking_id, dropoff_loc):
-        self.delivery_id = delivery_id
-        self.capacity = capacity
-        self.pickup_loc = pickup_loc
-        self.time_window_start = time_window_start
-        self.pickup_stacking_id = pickup_stacking_id
-        self.dropoff_loc = dropoff_loc
-
-    def __repr__(self):
-        return f"Delivery(ID={self.delivery_id}, Capacity={self.capacity}, Pickup Loc={self.pickup_loc}, " \
-               f"Time Window Start={self.time_window_start}, Pickup Stacking Id={self.pickup_stacking_id}, Dropoff Loc={self.dropoff_loc})"
+from src.instance import Instance
 
 
 # Function to load couriers from CSV using the csv module
@@ -109,33 +90,36 @@ def process_instance_folder(instance_folder_path):
 
 
 # Main function to loop through all instance folders
-def process_all_instances(parent_folder):
+def process_all_instances(parent_folder, max_instances=None):
+    logging.debug(f"Processing all instances in folder: {parent_folder}")
     all_instances = []
+    
 
     # Loop through each instance folder in the parent directory
     for instance_folder in os.listdir(parent_folder):
-        instance_folder_path = os.path.join(parent_folder, instance_folder)
+        if max_instances and len(all_instances) < max_instances:
+            instance_folder_path = os.path.join(parent_folder, instance_folder)
 
-        # Check if it's a directory (instance folder)
-        if os.path.isdir(instance_folder_path):
-            print(f"Processing instance: {instance_folder}")
-            try:
-                couriers, deliveries, travel_time = process_instance_folder(instance_folder_path)
-
-                # Add this instance's couriers, deliveries, and travel time matrix to the overall list
-                all_instances.append({
-                    'instance_name': instance_folder,
-                    'couriers': couriers,
-                    'deliveries': deliveries,
-                    'travel_time': travel_time
-                })
-            except FileNotFoundError as e:
-                print(e)
+            # Check if it's a directory (instance folder)
+            if os.path.isdir(instance_folder_path):
+                logging.debug(f"Processing instance: {instance_folder}")
+                try:
+                    couriers, deliveries, travel_time = process_instance_folder(instance_folder_path)
+                    instance = Instance(instance_folder, couriers, deliveries, travel_time) 
+                    # Add this instance's couriers, deliveries, and travel time matrix to the overall list
+                    all_instances.append(instance)
+                    
+                except FileNotFoundError as e:
+                    logging.error(f"Error processing instance: {instance_folder}. {e}")
+    if max_instances:
+        logging.info(f"Processed {len(all_instances)} instances out of {max_instances} requested.")
+    else:
+        logging.info(f"Processed {len(all_instances)} instances.")
 
     return all_instances
 
 
-# Entry point of the script
+"""# Entry point of the script
 def main():
     # Parse the command-line arguments
     parser = argparse.ArgumentParser(description="Process couriers, deliveries, and travel time matrices from multiple instances.")
@@ -149,4 +133,4 @@ def main():
 
 # Main execution
 if __name__ == "__main__":
-    main()
+    main()"""
