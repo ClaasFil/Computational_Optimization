@@ -1,7 +1,7 @@
 from src.read_data import *
 from src.helper import *
-
-
+import time
+import xpress as xp
 
 
 
@@ -17,13 +17,21 @@ def main():
 
     logging.debug(f"Stasrting to read instances")
     # Process all instances
-    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10)
 
+    #start timing 
+    start_time_preprocessing = time.time()
+    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1)
+    end_time_preprocessing = time.time()
+    logging.info(f"Preprocessing time: {end_time_preprocessing - start_time_preprocessing}")
 
+    #process each Instance
+    for each_instance in all_instance_data:
+        logging.info(f"Processing instance: {each_instance.instance_name}")
 
+        each_instance.model_instance()
+        
 
-
-    print("The End")
+    logging.info(f"The end of the script")
 
 
 # Main execution
