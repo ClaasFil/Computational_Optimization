@@ -1,6 +1,7 @@
 from src.read_data import *
 from src.helper import *
 from simple_greedy.simple_algorithm import *
+from src.output import *
 
 
 # Entry point of the script
@@ -15,10 +16,10 @@ def main():
 
     logging.debug(f"Starting to read instances")
     # Process all instances
-    # all_instance_data = process_all_instances('./training_data', max_instances=1)
+    #all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1)
 
     # Process test intance
-    dir = './training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
+    dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
     couriers, deliveries, travel_time = process_instance_folder(dir)
     instance = Instance(dir, couriers, deliveries, travel_time) 
     
