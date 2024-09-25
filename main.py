@@ -1,9 +1,9 @@
 from src.read_data import *
 from src.helper import *
-from simple_greedy.simple_algorithm import *
+from simple_greedy.titanic import *
 from src.output import *
 import time
-
+from simple_greedy.gready_anna import *
 
 # Entry point of the script
 def main():
@@ -17,7 +17,7 @@ def main():
 
     logging.debug(f"Starting to read instances")
     # Process all instances
-    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1000)
+    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
@@ -29,7 +29,16 @@ def main():
     for (i,each_instance) in enumerate(all_instance_data):
         start_time = time.time()
         #logging.INFO(f"Executing simple algorithm for instance: {each_instance.instance_name}")
-        execute_simple_algorithm(each_instance)
+        #Maike
+        #execute_simple_algorithm(each_instance)
+
+        #anna
+        each_instance = execute_greedy_algorithm(each_instance)
+
+
+
+
+
         #logging.INFO(f"Outputting results for instance: {each_instance.instance_name}")
         output(each_instance)
         logging.info(f"Execution time for instance {i}: {time.time() - start_time} seconds")
