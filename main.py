@@ -1,12 +1,15 @@
 from src.read_data import *
 from src.helper import *
+import sys
 import time
-import xpress as xp
+#import xpress as xp
 
 
 
 # Entry point of the script
 def main():
+    print("Python interpreter in use:", sys.executable)
+    print("Python version:", sys.version)
     
     location = os.path.dirname(os.path.abspath(__file__))
 

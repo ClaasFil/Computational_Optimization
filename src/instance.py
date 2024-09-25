@@ -1,13 +1,13 @@
-from src.delivery import Delivery
-from src.courier import Courier
-from src.arc import Arc
+from .delivery import Delivery
+from .courier import Courier
+from .arc import Arc
 
 
 
 import numpy as np
 from typing import List
 import logging
-
+import xpress as xp
 
 
 # Define the Courier class
@@ -89,8 +89,12 @@ class Instance:
     def model_instance(self):
         p = xp.problem(self.instance_name)
 
-        x_uvk = xp.add_variables(len(self.rider_starting_points), len(self.picup_locations) + len(self.dropoff_locations), len(self.picup_locations) + len(self.dropoff_locations), vartype=xp.binary)
-        
+        U = len(self.rider_starting_points)
+        V = len(self.picup_locations) + len(self.dropoff_locations)
+        K = len(self.picup_locations) + len(self.dropoff_locations)
+        x_uvk = xp.var(vartype=xp.binary, shape=(U, V, K), name='x_uvk')
+
+
         t_v = xp.add_variables( len(self.picup_locations) + len(self.dropoff_locations) + len(self.rider_starting_points), vartype=xp.continuous)
         
         pass
