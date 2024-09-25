@@ -1,5 +1,6 @@
 from src.instance import Instance
 import logging
+from itertools import cycle
 # max 180 min per route
 # max 4 deliveries per courier
 
@@ -19,20 +20,22 @@ def execute_simple_algorithm(instance: Instance):
     # Sort deliveries from first available time to last
     sorted_deliveries = sorted(instance.deliveries, key=lambda delivery: delivery.time_window_start)
 
-    # Assign deliveries to drivers
-    courier_id = 1
+    courier_dict = {courier.courier_id: courier for courier in instance.couriers}
+    
+    # Get the number of couriers
+    n = len(courier_dict)
+
+    # Use an itertools.cycle to cycle through couriers in a round-robin fashion
+    courier_cycle = cycle(courier_dict.values())
+    
+    # Iterate through each delivery and assign it to the next courier in the cycle
     for delivery in sorted_deliveries:
-        # identify next delivery for our courier
-        courier = list(filter(lambda elem: elem.courier_id == courier_id, instance.couriers))[0]
-        # add pickup to acitivity list of courier
+        courier = next(courier_cycle)  # Get the next courier in the round-robin cycle
+        # Add pickup and dropoff activities for the delivery to the courier's activity list
         courier.activities.append(delivery.delivery_id)
-        # add drop off to activity list of courier
         courier.activities.append(delivery.delivery_id)
-        courier_id += 1
-        if courier_id > n:
-            courier_id = 1
-    for courier in instance.couriers:
-        print(courier.activities)
+    #for courier in instance.couriers:
+        #print(courier.activities)
 
     # DO NOT NEED TO RUN THE CODE BELOW FOR FEASIBILITY CHECKER 
     # just for checking 180min constraint and max4 deliveries constraint
@@ -42,7 +45,7 @@ def execute_simple_algorithm(instance: Instance):
     # It will say that the solution is infeasible if there are more than 4 deliveries per courier
 
     # Assign deliveries to drivers
-    assignments = {courier_id: [] for courier_id in range(1,n+1)} # dict {courier: list[deliveries]}
+"""    assignments = {courier_id: [] for courier_id in range(1,n+1)} # dict {courier: list[deliveries]}
     courier_id = 1
     for delivery in sorted_deliveries:
         assignments[courier_id].append(delivery.delivery_id)
@@ -81,5 +84,5 @@ def execute_simple_algorithm(instance: Instance):
             raise Exception("So this is not a feasible solution.")
         # # get delivery driver home
         # total_t += instance.travel_time[delivery.dropoff_loc][courier.location]
-
-    return 0
+"""
+    
