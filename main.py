@@ -1,8 +1,6 @@
 from src.read_data import *
 from src.helper import *
-
-
-
+from simple_greedy.simple_algorithm import *
 
 
 # Entry point of the script
@@ -21,6 +19,12 @@ def main():
 
 
 
+    # Process test intance
+    dir = './training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
+    couriers, deliveries, travel_time = process_instance_folder(dir)
+    instance = Instance(dir, couriers, deliveries, travel_time) 
+    
+    execute_simple_algorithm(instance)
 
 
     print("The End")
