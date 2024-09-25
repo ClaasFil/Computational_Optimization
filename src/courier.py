@@ -5,6 +5,7 @@ class Courier:
         self.courier_id = courier_id
         self.location = location
         self.capacity = capacity
+        self.activities = []
 
     def __repr__(self):
         return f"Courier(ID={self.courier_id}, Location={self.location}, Capacity={self.capacity})"
