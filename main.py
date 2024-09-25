@@ -15,9 +15,7 @@ def main():
 
     logging.debug(f"Starting to read instances")
     # Process all instances
-    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10)
-
-
+    # all_instance_data = process_all_instances('./training_data', max_instances=1)
 
     # Process test intance
     dir = './training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
