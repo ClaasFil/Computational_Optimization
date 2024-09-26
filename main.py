@@ -14,6 +14,7 @@ from feasibility_checker import feasability_chack_all, check_single_instance
 from simple_greedy.magellan import magellan
 from simple_greedy.sir_francis_drake import sir_francis_drake
 from simple_greedy.hannibal import hannibal
+from simple_greedy.flying_dutchman import flying_dutchman
 
 # Entry point of the script
 def main():
@@ -22,14 +23,14 @@ def main():
     
 
     #[logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
-    setup_logging(log_level=logging.INFO, base_dir=location)  
+    setup_logging(log_level=logging.DEBUG, base_dir=location)  
 
 
     logging.debug(f"Starting to read instances")
     # Process all instances
     #all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10000)
     #all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=5)
-    all_instance_data = process_all_instances('./final_test_set', max_instances=1000)
+    all_instance_data = process_all_instances('./final_test_set', max_instances=100)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
@@ -79,9 +80,9 @@ def parallel_solve(each_instance):
     heuristics = [
         (titanic, "Titanic"),
         (magellan, "Magellan"),
-        (sir_francis_drake, "Sir Francis Drake")
+        (sir_francis_drake, "Sir Francis Drake"),
         #(hannibal, "Hannibal"),
-        #(columbus, "Columbus")
+        (flying_dutchman, "Flying Dutchman")
     ]
 
     # Execute each heuristic sequentially
