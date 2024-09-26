@@ -1,10 +1,13 @@
 from src.read_data import *
 from src.helper import *
+from src.instance import *
 from simple_greedy.titanic import *
 from src.output import *
 import time
 from simple_greedy.gready_anna import *
+from simple_greedy.columbus import *
 import copy
+import concurrent.futures
 
 from feasibility_checker import feasability_chack_all, check_single_instance
 
@@ -23,65 +26,96 @@ def main():
 
     logging.debug(f"Starting to read instances")
     # Process all instances
-    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1000)
+    #all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10000)
+    all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=1000)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
     #couriers, deliveries, travel_time = process_instance_folder(dir)
     #instance = Instance(dir, couriers, deliveries, travel_time) 
     
-    
     feasbilty_counter = 0
-    for (i,each_instance) in enumerate(all_instance_data):
-        solved_instance = False
+    for i, each_instance in enumerate(all_instance_data):
         start_time = time.time()
-        #logging.INFO(f"Executing simple algorithm for instance: {each_instance.instance_name}")
-        #Maike
-        logging.info(f"-----------")
-        current_instance = copy.deepcopy(each_instance)
-        titanic(current_instance)
-        output_path = output(current_instance)
-        is_feasable, cost = check_single_instance(output_path)
-        if is_feasable:
-            solved_instance = True
-            logging.info(f"Titanic Feasable: {cost}")
-
-        current_instance = copy.deepcopy(each_instance)
-        magellan(current_instance)
-        output_path = output(current_instance)
-        is_feasable, cost = check_single_instance(output_path)
-        if is_feasable:
-            solved_instance = True
-            logging.info(f"Magellan Feasable: {cost}")
-
-        current_instance = copy.deepcopy(each_instance)
-        sir_francis_drake(current_instance)
-        output_path = output(current_instance)
-        is_feasable, cost = check_single_instance(output_path)
-        if is_feasable:
-            solved_instance = True
-            logging.info(f"Sir Francis Drake Feasable: {cost}")
-        
-        
-        #anna
-        #each_instance = execute_greedy_algorithm(each_instance)
-
-
-
-
-
-        #logging.INFO(f"Outputting results for instance: {each_instance.instance_name}")
-        output_path = output(each_instance)
-        logging.info(f"Execution time for instance {i}: {time.time() - start_time} seconds")
-
-        #is_feasable, cost = check_single_instance(output_path)
+        solved_instance = parallel_solve(each_instance)
         if solved_instance:
             feasbilty_counter += 1
+        else:
+            logging.warning(f"Instance {each_instance.instance_name} could not be solved.")
+
+
+
+
+
+        logging.info(f"Instance {i} solved successfully. Execution time: {time.time() - start_time} seconds")
+
+
 
     logging.info(f"Feasability rate: {feasbilty_counter}/{len(all_instance_data)}")
 
     #feasability_chack_all()
     print("The End")
+
+
+
+
+
+
+def run_heuristic(heuristic_func, instance, name):
+    current_instance = copy.deepcopy(instance)
+    heuristic_func(current_instance)
+    output_path = output(current_instance)
+    is_feasable, cost = check_single_instance(output_path)
+    return name, is_feasable, cost, current_instance
+
+def parallel_solve(each_instance):
+    solved_instance = False
+    best_solution = None
+    best_cost = float('inf')
+
+    # Define the heuristics and their names
+    heuristics = [
+        (titanic, "Titanic"),
+        (magellan, "Magellan"),
+        (sir_francis_drake, "Sir Francis Drake")
+        #(columbus, "Columbus")
+    ]
+
+    # Use ProcessPoolExecutor to run heuristics in parallel
+    with concurrent.futures.ProcessPoolExecutor(max_workers=len(heuristics)) as executor:
+        # Submit each heuristic for execution in parallel
+        futures = {
+            executor.submit(run_heuristic, heuristic_func, each_instance, name): name
+            for heuristic_func, name in heuristics
+        }
+
+        # As results complete, check for feasibility and track the best solution
+        for future in concurrent.futures.as_completed(futures):
+            name = futures[future]
+            try:
+                name, is_feasable, cost, solution_instance = future.result()
+                if is_feasable:
+                    solved_instance = True
+                    logging.info(f"{name} Feasible: {cost}")
+
+                    # Check if this solution has the best cost
+                    if cost < best_cost:
+                        best_cost = cost
+                        best_solution = solution_instance
+
+            except Exception as exc:
+                logging.error(f"{name} heuristic generated an exception: {exc}")
+
+    # If we found a feasible solution, call the output function for the best solution
+    if best_solution:
+        output_path = output(best_solution)
+        #logging.info(f"Best feasible solution saved with cost {best_cost}")
+
+    return solved_instance
+
+
+
+
 
 
 # Main execution
