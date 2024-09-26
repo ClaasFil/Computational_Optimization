@@ -1,10 +1,12 @@
 from src.instance import Instance
+from src.delivery import Delivery
+from src.courier import Courier
 import logging
 from itertools import cycle
 # max 180 min per route
 # max 4 deliveries per courier
 
-def execute_simple_algorithm(instance: Instance):
+def titanic(instance: Instance):
 
     # Idea of the algorithm:
     # Sort deliveries from first available time to last.
@@ -14,6 +16,8 @@ def execute_simple_algorithm(instance: Instance):
     # We do not guarantee a feasible solution,
     # 180min per route and max4 deliveries per courier might be violated.
     
+
+
     n = len(instance.couriers)
     m = len(instance.deliveries)
 
@@ -27,62 +31,50 @@ def execute_simple_algorithm(instance: Instance):
 
     # Use an itertools.cycle to cycle through couriers in a round-robin fashion
     courier_cycle = cycle(courier_dict.values())
-    
-    # Iterate through each delivery and assign it to the next courier in the cycle
+
     for delivery in sorted_deliveries:
-        courier = next(courier_cycle)  # Get the next courier in the round-robin cycle
-        # Add pickup and dropoff activities for the delivery to the courier's activity list
-        courier.activities.append(delivery.delivery_id)
-        courier.activities.append(delivery.delivery_id)
-    #for courier in instance.couriers:
-        #print(courier.activities)
+        assigned = False  # Flag to track if delivery was assigned to any courier in this iteration
+        
+        # Check all couriers to see if anyone can take the delivery within max_travel_time
+        for _ in range(n):  # Loop through the couriers in a round-robin cycle
+            courier = next(courier_cycle)  # Get the next courier in the cycle
+            
+            
+            
+            if rider_is_feasible(delivery, courier, instance):
+                # Assign the delivery to the courier
+                # Update the courier's attributes
+                courier.delivery_count += 1
 
-    # DO NOT NEED TO RUN THE CODE BELOW FOR FEASIBILITY CHECKER 
-    # just for checking 180min constraint and max4 deliveries constraint
-    # and finding interpretable solution and objective function value
+                #update the time consumed by the courier
+                delivery_time = instance.travel_time[delivery.pickup_loc][delivery.dropoff_loc]
+                time_to_pickup = instance.travel_time[courier.location][delivery.pickup_loc]
+                courier.time_consumed += (delivery_time + time_to_pickup)
 
-    # 180 min per route might be violated, it will indicate that
-    # It will say that the solution is infeasible if there are more than 4 deliveries per courier
+                # Update the courier's activities and location
+                courier.activities.append(delivery.delivery_id)  # Add pickup
+                courier.activities.append(delivery.delivery_id)  # Add dropoff
 
-    # Assign deliveries to drivers
-"""    assignments = {courier_id: [] for courier_id in range(1,n+1)} # dict {courier: list[deliveries]}
-    courier_id = 1
-    for delivery in sorted_deliveries:
-        assignments[courier_id].append(delivery.delivery_id)
-        courier_id += 1
-        if courier_id > n:
-            courier_id = 1
+                # Update the courier's location
+                courier.location = delivery.dropoff_loc  # Update courier's location to dropoff location
 
-    # Check max. 4 deliveries per courier constraint
-    for courier_id, delivery_lst in assignments.items():
-        if len(delivery_lst) > 4:
-            logging.error("Oops! Courier" + str(courier.courier_id) + "has to deliver more than 4 deliveries")
-            raise Exception("So this is not a feasible solution.")
+                # Mark the delivery as assigned
+                assigned = True  # Mark delivery as assigned
+                break  # Exit the courier loop once the delivery is assigned
+            #else:
+            #    logging.debug(f"Courier {courier.courier_id} cannot take delivery {delivery.delivery_id}")
+        
+        # If no courier could take this delivery, break out of the loop
+        if not assigned:
+            logging.warning(f"Delivery {delivery.delivery_id} could not be assigned to any courier")
+            break
 
-    # Find the solution provided by this assignment:
-    # The total delivery time (objective funciton value) and the list of activities for each courier
-    total_delivery_time = 0 # objective function value
-    for courier in instance.couriers:
-        total_t = 0
-        courier_loc = courier.location
-        for delivery_id in assignments[courier.courier_id]:
-            # identify next delivery for our courier
-            delivery = list(filter(lambda elem: elem.delivery_id == delivery_id, instance.deliveries))[0]
-            # calculate travel time from couriers current location to pickup location
-            total_t += max(total_t + instance.travel_time[courier_loc][delivery.pickup_loc], delivery.time_window_start)
-            courier.activities.append(delivery.delivery_id)
-            # caclulate travel time from pickup to delivery locatiion
-            total_t += instance.travel_time[delivery.pickup_loc][delivery.dropoff_loc]
-            courier.activities.append(delivery.delivery_id)
-            # add this dropoff time to the total delivery time
-            total_delivery_time += total_t
-            # set current courier location to dropoff location
-            courier_loc = delivery.dropoff_loc
-        # Check 180min constraint
-        if total_t > 180:
-            logging.error("Oops! Route of driver" + str(courier.courier_id) + "is longer than 180 minutes")
-            raise Exception("So this is not a feasible solution.")
-        # # get delivery driver home
-        # total_t += instance.travel_time[delivery.dropoff_loc][courier.location]
-"""
-    
+
+def rider_is_feasible(delivery: Delivery, courier: Courier, instance: Instance):
+    delivery_time = instance.travel_time[delivery.pickup_loc][delivery.dropoff_loc]
+    time_to_pickup = instance.travel_time[courier.location][delivery.pickup_loc]
+    if courier.time_consumed + delivery_time + time_to_pickup < instance.max_travel_time:
+        if courier.capacity >= delivery.capacity:
+            if courier.delivery_count < 4:
+                return True
+    return False

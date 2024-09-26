@@ -16,6 +16,7 @@ class Instance:
         # O in Doc
         self.deliveries = deliveries
         self.travel_time = travel_time
+        self.max_travel_time = 180
 
 
         # determent variabla

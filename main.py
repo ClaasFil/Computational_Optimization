@@ -5,6 +5,8 @@ from src.output import *
 import time
 from simple_greedy.gready_anna import *
 
+from feasibility_checker import feasability_chack_all, check_singele_instance
+
 # Entry point of the script
 def main():
     
@@ -17,7 +19,7 @@ def main():
 
     logging.debug(f"Starting to read instances")
     # Process all instances
-    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1)
+    all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=1000)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
@@ -30,20 +32,24 @@ def main():
         start_time = time.time()
         #logging.INFO(f"Executing simple algorithm for instance: {each_instance.instance_name}")
         #Maike
-        #execute_simple_algorithm(each_instance)
+        titanic(each_instance)
 
         #anna
-        each_instance = execute_greedy_algorithm(each_instance)
+        #each_instance = execute_greedy_algorithm(each_instance)
 
 
 
 
 
         #logging.INFO(f"Outputting results for instance: {each_instance.instance_name}")
-        output(each_instance)
+        output_path = output(each_instance)
         logging.info(f"Execution time for instance {i}: {time.time() - start_time} seconds")
 
+        #is_feasable = check_singele_instance(output_path)
 
+
+
+    feasability_chack_all()
     print("The End")
 
 

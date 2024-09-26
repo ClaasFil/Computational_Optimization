@@ -1,6 +1,7 @@
 import os
 import csv
 import argparse
+import logging
 
 
 # Define the Courier class
@@ -130,7 +131,7 @@ def process_all_instances(parent_folder):
 
     # Check if it's a directory (instance folder)
     if os.path.isdir(instance_folder_path):
-      print(f"Processing instance: {instance_folder}")
+      logging.debug(f"Processing instance: {instance_folder}")
       try:
         couriers, deliveries, travel_time = process_instance_folder(
           instance_folder_path)
@@ -144,6 +145,30 @@ def process_all_instances(parent_folder):
         })
       except FileNotFoundError as e:
         print(e)
+
+  return all_instances
+
+def process_one_instances(instance_folder_path):
+  all_instances = []
+
+
+
+  # Check if it's a directory (instance folder)
+  if os.path.isdir(instance_folder_path):
+    logging.debug(f"Processing instance: {instance_folder_path}")
+    try:
+      couriers, deliveries, travel_time = process_instance_folder(
+        instance_folder_path)
+
+      # Add this instance's couriers, deliveries, and travel time matrix to the overall list
+      all_instances.append({
+        'instance_name': instance_folder_path,
+        'couriers': couriers,
+        'deliveries': deliveries,
+        'travel_time': travel_time
+      })
+    except FileNotFoundError as e:
+      print(e)
 
   return all_instances
 
@@ -168,12 +193,14 @@ def check_all_couriers_covered(routes, couriers):
   all_couriers_covered = True
   for route in routes:
     if courier_found[route.rider_id - 1] == True:
-      print(f"Courier {route.rider_id} has more than one route.")
+      logging.warning(f"Courier {route.rider_id} has more than one route.")
+      #print(f"Courier {route.rider_id} has more than one route.")
       all_couriers_covered = False
     courier_found[route.rider_id - 1] = True
   for i, has_route in enumerate(courier_found):
     if not has_route:
-      print(f"Courier {i + 1} has no route.")
+      logging.warning(f"Courier {i + 1} has no route.")
+      #print(f"Courier {i + 1} has no route.")
       all_couriers_covered = False
   return all_couriers_covered
 
@@ -189,12 +216,14 @@ def check_all_activities_covered(routes, couriers, deliveries):
                                               order - n_couriers - 1] + 1
   for i, order_has_route in enumerate(order_found):
     if order_has_route < 2:
-      print(
-        f"Order {i + n_couriers + 1} appears less than twice in the solution.")
+      logging.warning(f"Order {i + n_couriers + 1} appears less than twice in the solution.")
+      #print(
+      #  f"Order {i + n_couriers + 1} appears less than twice in the solution.")
       all_activities_are_covered = False
     if order_has_route > 2:
-      print(
-        f"Order {i + n_couriers + 1} appears more than twice in the solution.")
+      logging.warning(f"Order {i + n_couriers + 1} appears more than twice in the solution.")
+      #print(
+      #  f"Order {i + n_couriers + 1} appears more than twice in the solution.")
       all_activities_are_covered = False
   return all_activities_are_covered
 
@@ -213,17 +242,23 @@ def is_feasible(route, couriers, deliveries, traveltimes):
       orders_in_bag.add(activity)
       load = load + delivery.capacity
       if load > courierCapacity:
-        print(
+        logging.warning(
           f"Route of courier {route.rider_id} violates the capacity condition at pickup {activity}.")
+        #print(
+        #  f"Route of courier {route.rider_id} violates the capacity condition at pickup {activity}.")
         return False
   if orders_in_bag:
-    print(
+    logging.warning(
       f"Route of courier {route.rider_id} only has a pickup for deliveries {orders_in_bag}.")
+    #print(
+    #  f"Route of courier {route.rider_id} only has a pickup for deliveries {orders_in_bag}.")
     return False
 
   if not check_route_length(route):
-    print(
+    logging.warning(
       f"Route of courier {route.rider_id} contains more than four deliveries.")
+    #print(
+    #  f"Route of courier {route.rider_id} contains more than four deliveries.")
     return False
 
   if not check_route_duration(route, couriers, deliveries, traveltimes):
@@ -252,8 +287,10 @@ def check_route_duration(route, couriers, deliveries, travelTimes):
       lastLocation = delivery.pickup_loc
 
   if currentTime > 180:
-    print(
+    logging.warning(
       f"Route of courier {route.rider_id} is takes too long with {currentTime} minutes.")
+    #print(
+    #  f"Route of courier {route.rider_id} is takes too long with {currentTime} minutes.")
     return False
 
   return True
@@ -299,9 +336,65 @@ def get_delivery(deliveries, delivery_id):
       return delivery
   return None
 
+def check_singele_instance(instance_path):
+  logging.debug(f"\nInstance: {instance_path}")
+   
+  # Process all instances
+  instance_data = process_one_instances(instance_path)
+
+  # Output the results
+
+
+
+  #print(instance_name)
+  routes = read_routes_from_csv(instance_path)
+
+  # Print out the routes for verification
+  for route in routes:
+    logging.debug(route)
+    #print(route)
+
+  all_couriers_covered = check_all_couriers_covered(routes,
+                                                    instance_data['couriers'])
+  if all_couriers_covered:
+    logging.debug("All riders have a route!")
+    #print("All riders have a route!")
+
+  all_activities_covered = check_all_activities_covered(routes, instance_data[
+    'couriers'], instance_data['deliveries'])
+  if all_activities_covered:
+    logging.debug("All deliveries are contained in exactly one route!")
+    #print("All deliveries are contained in exactly one route!")
+
+  total_cost = 0
+  all_routes_are_feasible = True
+  for route in routes:
+    route_is_feasible = is_feasible(route, instance_data['couriers'],
+                                    instance_data['deliveries'],
+                                    instance_data['travel_time'])
+    if not route_is_feasible:
+      logging.warning("Route of courier " + str(route.rider_id) + " is not feasible!")
+      #print("Route of courier " + str(route.rider_id) + " is not feasible!")
+      all_routes_are_feasible = False
+
+    route_cost = get_route_cost(route, instance_data['couriers'],
+                                instance_data['deliveries'],
+                                instance_data['travel_time'])
+    # print("Cost of courier " + str(route.rider_id) + " route is " + str(
+    #  route_cost))
+    total_cost = total_cost + route_cost
+
+  if all_activities_covered and all_routes_are_feasible and all_couriers_covered:
+    logging.info("The solution is feasible!")
+    logging.info("Total cost of feasible solution: " + str(total_cost))
+    #print("Total cost of feasible solution: " + str(total_cost))
+  else:
+    logging.info(f"The solution {instance_data['instance_name']} is not feasible!")
+
+
 
 # Entry point of the script
-def main():
+def feasability_chack_all():
   # Parse the command-line arguments
   """parser = argparse.ArgumentParser(
     description="Process couriers, deliveries, and travel time matrices from multiple instances.")
@@ -321,7 +414,8 @@ def main():
 
   # Output the results
   for instance_data in all_instance_data:
-    print(f"\nInstance: {instance_data['instance_name']}")
+    logging.debug(f"\nInstance: {instance_data['instance_name']}")
+    #print(f"\nInstance: {instance_data['instance_name']}")
 
     # print("Couriers:")
     # for courier in instance_data['couriers']:
@@ -336,23 +430,27 @@ def main():
     #     print(row)
 
     instance_name = instance_data['instance_name']
-    print(instance_name)
+    logging.debug(instance_name)
+    #print(instance_name)
     csv_file = "res/" + instance_name + ".csv"  # Update with the actual path to your CSV
     routes = read_routes_from_csv(csv_file)
 
     # Print out the routes for verification
     for route in routes:
-      print(route)
+      logging.debug(route)
+      #print(route)
 
     all_couriers_covered = check_all_couriers_covered(routes,
                                                       instance_data['couriers'])
     if all_couriers_covered:
-      print("All riders have a route!")
+      logging.debug("All riders have a route!")
+      #print("All riders have a route!")
 
     all_activities_covered = check_all_activities_covered(routes, instance_data[
       'couriers'], instance_data['deliveries'])
     if all_activities_covered:
-      print("All deliveries are contained in exactly one route!")
+      logging.debug("All deliveries are contained in exactly one route!")
+      #print("All deliveries are contained in exactly one route!")
 
     total_cost = 0
     all_routes_are_feasible = True
@@ -361,7 +459,8 @@ def main():
                                       instance_data['deliveries'],
                                       instance_data['travel_time'])
       if not route_is_feasible:
-        print("Route of courier " + str(route.rider_id) + " is not feasible!")
+        logging.warning("Route of courier " + str(route.rider_id) + " is not feasible!")
+        #print("Route of courier " + str(route.rider_id) + " is not feasible!")
         all_routes_are_feasible = False
 
       route_cost = get_route_cost(route, instance_data['couriers'],
@@ -372,9 +471,11 @@ def main():
       total_cost = total_cost + route_cost
 
     if all_activities_covered and all_routes_are_feasible and all_couriers_covered:
-      print("Total cost of feasible solution: " + str(total_cost))
-
-
+      logging.info("The solution is feasible!")
+      logging.info("Total cost of feasible solution: " + str(total_cost))
+      #print("Total cost of feasible solution: " + str(total_cost))
+    else:
+      logging.info(f"The solution {instance_data['instance_name']} is not feasible!")
 # Main execution
 if __name__ == "__main__":
-  main()
+  feasability_chack_all()

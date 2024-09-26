@@ -39,3 +39,6 @@ def output(instance:Instance):
             
             # Write the row to the CSV file
             writer.writerow(row)
+    #return file_path
+    logging.debug(f"Output file created: {file_path}")
+    return file_path
