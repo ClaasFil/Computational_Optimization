@@ -27,7 +27,7 @@ def main():
     logging.debug(f"Starting to read instances")
     # Process all instances
     #all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10000)
-    all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=1000)
+    all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=5)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
@@ -78,33 +78,25 @@ def parallel_solve(each_instance):
         (titanic, "Titanic"),
         (magellan, "Magellan"),
         (sir_francis_drake, "Sir Francis Drake")
-        #(columbus, "Columbus")
+        # (columbus, "Columbus")
     ]
 
-    # Use ProcessPoolExecutor to run heuristics in parallel
-    with concurrent.futures.ProcessPoolExecutor(max_workers=len(heuristics)) as executor:
-        # Submit each heuristic for execution in parallel
-        futures = {
-            executor.submit(run_heuristic, heuristic_func, each_instance, name): name
-            for heuristic_func, name in heuristics
-        }
+    # Execute each heuristic sequentially
+    for heuristic_func, name in heuristics:
+        try:
+            name, is_feasable, cost, solution_instance = run_heuristic(heuristic_func, each_instance, name)
+            
+            if is_feasable:
+                solved_instance = True
+                logging.info(f"{name} Feasible: {cost}")
 
-        # As results complete, check for feasibility and track the best solution
-        for future in concurrent.futures.as_completed(futures):
-            name = futures[future]
-            try:
-                name, is_feasable, cost, solution_instance = future.result()
-                if is_feasable:
-                    solved_instance = True
-                    logging.info(f"{name} Feasible: {cost}")
+                # Check if this solution has the best cost
+                if cost < best_cost:
+                    best_cost = cost
+                    best_solution = solution_instance
 
-                    # Check if this solution has the best cost
-                    if cost < best_cost:
-                        best_cost = cost
-                        best_solution = solution_instance
-
-            except Exception as exc:
-                logging.error(f"{name} heuristic generated an exception: {exc}")
+        except Exception as exc:
+            logging.error(f"{name} heuristic generated an exception: {exc}")
 
     # If we found a feasible solution, call the output function for the best solution
     if best_solution:
@@ -112,7 +104,6 @@ def parallel_solve(each_instance):
         #logging.info(f"Best feasible solution saved with cost {best_cost}")
 
     return solved_instance
-
 
 
 
