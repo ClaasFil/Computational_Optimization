@@ -13,6 +13,7 @@ from feasibility_checker import feasability_chack_all, check_single_instance
 
 from simple_greedy.magellan import magellan
 from simple_greedy.sir_francis_drake import sir_francis_drake
+from simple_greedy.hannibal import hannibal
 
 # Entry point of the script
 def main():
@@ -27,7 +28,8 @@ def main():
     logging.debug(f"Starting to read instances")
     # Process all instances
     #all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10000)
-    all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=5)
+    #all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=5)
+    all_instance_data = process_all_instances('Computational_Optimization/final_test_set', max_instances=10)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
@@ -77,8 +79,9 @@ def parallel_solve(each_instance):
     heuristics = [
         (titanic, "Titanic"),
         (magellan, "Magellan"),
-        (sir_francis_drake, "Sir Francis Drake")
-        # (columbus, "Columbus")
+        (sir_francis_drake, "Sir Francis Drake"),
+        #(hannibal, "Hannibal"),
+        (columbus, "Columbus")
     ]
 
     # Execute each heuristic sequentially
