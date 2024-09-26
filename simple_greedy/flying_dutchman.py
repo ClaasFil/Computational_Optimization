@@ -22,7 +22,7 @@ def flying_dutchman(instance: Instance):
     # 180min per route per courier might be violated.
     
     # Initialize algorithm parameters
-    T = 10*sum(instance.travel_time[1][1:]) # upper bound on total time needed to deliver everything
+    T = 2*sum(instance.travel_time[1][1:]) # upper bound on total time needed to deliver everything
     n = len(instance.couriers)
     m = len(instance.deliveries)
     available_couriers = [[courier.courier_id for courier in instance.couriers] for _ in range(T)]

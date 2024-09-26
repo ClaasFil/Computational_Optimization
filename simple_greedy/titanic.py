@@ -61,8 +61,7 @@ def titanic(instance: Instance):
                 # Mark the delivery as assigned
                 assigned = True  # Mark delivery as assigned
                 break  # Exit the courier loop once the delivery is assigned
-            #else:
-            #    logging.debug(f"Courier {courier.courier_id} cannot take delivery {delivery.delivery_id}")
+
         
         # If no courier could take this delivery, break out of the loop
         if not assigned:
