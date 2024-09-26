@@ -41,4 +41,4 @@ def output(instance:Instance):
             writer.writerow(row)
     #return file_path
     logging.debug(f"Output file created: {file_path}")
-    return file_path
+    return instance.instance_name

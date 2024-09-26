@@ -66,7 +66,7 @@ def titanic(instance: Instance):
         
         # If no courier could take this delivery, break out of the loop
         if not assigned:
-            logging.warning(f"Delivery {delivery.delivery_id} could not be assigned to any courier")
+            logging.debug(f"Delivery {delivery.delivery_id} could not be assigned to any courier")
             break
 
 
