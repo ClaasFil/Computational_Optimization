@@ -93,7 +93,7 @@ def process_instance_folder(instance_folder_path):
 
   #file_path = os.path.join("Computational_Optimization/training_data_hard/", f"{instance_folder_path}")
   #file_path = os.path.join("Computational_Optimization/training_data/", f"{instance_folder_path}")
-  file_path = os.path.join("Computational_Optimization/final_test_set/", f"{instance_folder_path}")
+  file_path = os.path.join("./final_test_set/", f"{instance_folder_path}")
 
   # Search for files in the instance folder
   for filename in os.listdir(file_path):

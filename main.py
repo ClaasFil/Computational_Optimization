@@ -29,7 +29,7 @@ def main():
     # Process all instances
     #all_instance_data = process_all_instances('Computational_Optimization/training_data', max_instances=10000)
     #all_instance_data = process_all_instances('Computational_Optimization/training_data_hard', max_instances=5)
-    all_instance_data = process_all_instances('Computational_Optimization/final_test_set', max_instances=10)
+    all_instance_data = process_all_instances('./final_test_set', max_instances=1000)
 
     # Process test intance
     #dir = 'Computational_Optimization/training_data/2a230eaf-44a1-4705-9cd4-19ba7d4f4668'
@@ -79,9 +79,9 @@ def parallel_solve(each_instance):
     heuristics = [
         (titanic, "Titanic"),
         (magellan, "Magellan"),
-        (sir_francis_drake, "Sir Francis Drake"),
+        (sir_francis_drake, "Sir Francis Drake")
         #(hannibal, "Hannibal"),
-        (columbus, "Columbus")
+        #(columbus, "Columbus")
     ]
 
     # Execute each heuristic sequentially
